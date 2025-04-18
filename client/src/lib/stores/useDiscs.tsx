@@ -12,9 +12,15 @@ interface DiscsState {
   // Ellipsis proportion (aspect ratio) - affects all discs
   ellipsisProportion: number;
   
+  // Gradient center offset - allows moving the center of the gradient
+  centerOffsetX: number;
+  centerOffsetY: number;
+  
   // Setter functions
   setEllipsisProportion: (proportion: number) => void;
   setDistance: (distance: number) => void;
+  setCenterOffsetX: (offset: number) => void;
+  setCenterOffsetY: (offset: number) => void;
   
   // Reset function
   resetValues: () => void;
@@ -26,6 +32,8 @@ const DEFAULT_SIZE_2 = 1.5;
 const DEFAULT_SIZE_3 = 2.0;
 const DEFAULT_DISTANCE = 0.5;
 const DEFAULT_ELLIPSIS_PROPORTION = 1.0; // 1.0 means circle, < 1.0 means ellipsis
+const DEFAULT_CENTER_OFFSET_X = 0.0; // 0.0 means centered
+const DEFAULT_CENTER_OFFSET_Y = 0.0; // 0.0 means centered
 
 export const useDiscs = create<DiscsState>((set) => ({
   // Initial state
@@ -34,10 +42,14 @@ export const useDiscs = create<DiscsState>((set) => ({
   size3: DEFAULT_SIZE_3,
   distance: DEFAULT_DISTANCE,
   ellipsisProportion: DEFAULT_ELLIPSIS_PROPORTION,
+  centerOffsetX: DEFAULT_CENTER_OFFSET_X,
+  centerOffsetY: DEFAULT_CENTER_OFFSET_Y,
   
   // Setter functions
   setDistance: (distance: number) => set({ distance }),
   setEllipsisProportion: (proportion: number) => set({ ellipsisProportion: proportion }),
+  setCenterOffsetX: (offset: number) => set({ centerOffsetX: offset }),
+  setCenterOffsetY: (offset: number) => set({ centerOffsetY: offset }),
   
   // Reset function - restores defaults
   resetValues: () => set({
@@ -46,5 +58,7 @@ export const useDiscs = create<DiscsState>((set) => ({
     size3: DEFAULT_SIZE_3,
     distance: DEFAULT_DISTANCE,
     ellipsisProportion: DEFAULT_ELLIPSIS_PROPORTION,
+    centerOffsetX: DEFAULT_CENTER_OFFSET_X,
+    centerOffsetY: DEFAULT_CENTER_OFFSET_Y,
   }),
 }));

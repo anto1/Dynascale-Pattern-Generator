@@ -7,12 +7,14 @@ const discVertexShader = `
 // Vertex shader for the disc gradient
 varying vec2 vUv;
 varying float vDistance;
+varying vec2 vPosition;
+
+uniform float uCenterOffsetX;
+uniform float uCenterOffsetY;
 
 void main() {
   vUv = uv;
-  
-  // Calculate distance from center for gradient
-  vDistance = length(position.xy);
+  vPosition = position.xy;
   
   // Standard position calculation
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -23,18 +25,22 @@ const discFragmentShader = `
 // Fragment shader for the disc gradient
 varying vec2 vUv;
 varying float vDistance;
+varying vec2 vPosition;
 
 uniform float uTime;
 uniform float uSize;
 uniform float uEllipsisProportion; // Aspect ratio for ellipsis
+uniform float uCenterOffsetX; // X offset for gradient center
+uniform float uCenterOffsetY; // Y offset for gradient center
 uniform vec3 uColor0;   // 0%
 uniform vec3 uColor75;  // 75%
 uniform vec3 uColor90;  // 90%
 uniform vec3 uColor100; // 100%
 
 void main() {
-  // Calculate normalized distance from center
-  float dist = vDistance / uSize;
+  // Calculate distance from the offset center
+  vec2 offsetCenter = vec2(uCenterOffsetX, uCenterOffsetY);
+  float dist = length(vPosition - offsetCenter) / uSize;
   
   // Add subtle animation to the gradient
   float animatedDist = dist + 0.03 * sin(uTime * 0.5 + dist * 10.0);
@@ -74,12 +80,21 @@ interface DiscProps {
   position: THREE.Vector3;
   rotation: [number, number, number];
   ellipsisProportion?: number; // Optional aspect ratio for creating ellipses
+  centerOffsetX?: number; // Optional x-offset for the gradient center
+  centerOffsetY?: number; // Optional y-offset for the gradient center
 }
 
 /**
  * Disc component that renders a single disc with a blue gradient shader
  */
-const Disc = ({ size, position, rotation, ellipsisProportion = 1.0 }: DiscProps) => {
+const Disc = ({ 
+  size, 
+  position, 
+  rotation, 
+  ellipsisProportion = 1.0, 
+  centerOffsetX = 0.0, 
+  centerOffsetY = 0.0 
+}: DiscProps) => {
   // Reference to the mesh for animations
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -94,13 +109,15 @@ const Disc = ({ size, position, rotation, ellipsisProportion = 1.0 }: DiscProps)
         uTime: { value: 0 },
         uSize: { value: size },
         uEllipsisProportion: { value: ellipsisProportion },
+        uCenterOffsetX: { value: centerOffsetX },
+        uCenterOffsetY: { value: centerOffsetY },
         uColor0: { value: new THREE.Color("#000000") },   // 0% - Center
         uColor75: { value: new THREE.Color("#030B3E") },  // 75%
         uColor90: { value: new THREE.Color("#112670") },  // 90%
         uColor100: { value: new THREE.Color("#294BAB") }, // 100% - Edge
       },
     });
-  }, [size, ellipsisProportion]);
+  }, [size, ellipsisProportion, centerOffsetX, centerOffsetY]);
 
   // Update shader uniforms on each frame
   useFrame((state) => {
@@ -113,6 +130,10 @@ const Disc = ({ size, position, rotation, ellipsisProportion = 1.0 }: DiscProps)
       
       // Update ellipsis proportion if it changes
       material.uniforms.uEllipsisProportion.value = ellipsisProportion;
+      
+      // Update center offset if it changes
+      material.uniforms.uCenterOffsetX.value = centerOffsetX;
+      material.uniforms.uCenterOffsetY.value = centerOffsetY;
     }
   });
 
