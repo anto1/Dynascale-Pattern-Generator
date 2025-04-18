@@ -21,7 +21,7 @@ function App() {
       </div>
       
       {/* Main 3D canvas container */}
-      <div className="flex-grow relative">
+      <div className="flex-grow relative w-full h-full">
         <ThreeScene />
       </div>
     </div>

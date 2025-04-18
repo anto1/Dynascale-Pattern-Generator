@@ -169,8 +169,10 @@ const ThreeScene = ({ maxZoom = 50 }: { maxZoom?: number }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full h-full">
       <Canvas
+        className="w-full h-full"
+        style={{ width: '100%', height: '100%' }}
         camera={{
           position: [0, 0, 10],
           fov: 50,
