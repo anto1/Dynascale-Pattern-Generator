@@ -12,14 +12,26 @@ interface RotationDegrees {
   z: number;
 }
 
+// Utility function to create a static default rotation matrix
+const createDefaultRotation = () => {
+  // Convert Euler angles to matrix
+  const matrix = new THREE.Matrix4();
+  const euler = new THREE.Euler(
+    THREE.MathUtils.degToRad(150), // X: 150 degrees
+    THREE.MathUtils.degToRad(0),   // Y: 0 degrees
+    THREE.MathUtils.degToRad(180), // Z: 180 degrees
+    'XYZ'
+  );
+  matrix.makeRotationFromEuler(euler);
+  return matrix;
+};
+
 /**
  * Scene content component that contains all 3D objects
  * This component is used inside the Canvas and can use hooks like useFrame
  */
 const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: RotationDegrees) => void }) => {
   const controlsRef = useRef<any>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera>(null);
-  const groupRef = useRef<THREE.Group>(null);
   const { 
     size1, 
     size2, 
@@ -30,53 +42,41 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
     centerOffsetY 
   } = useDiscs();
 
-  // Access the Three.js state using useThree
-  const { camera, scene } = useThree();
-  
-  // Set initial rotation (runs once after component mounts)
+  // Initialize with default rotation
   useEffect(() => {
-    // Initial rotation values in radians
-    const initialRotationX = (150 * Math.PI) / 180;
-    const initialRotationY = (0 * Math.PI) / 180;
-    const initialRotationZ = (180 * Math.PI) / 180;
-    
-    // Apply rotation directly to camera
-    camera.rotation.set(initialRotationX, initialRotationY, initialRotationZ);
-    camera.updateMatrixWorld();
-    
-    if (controlsRef.current) {
-      // Update orbit controls to match camera rotation
-      controlsRef.current.update();
-    }
-    
-    // Send initial values to parent component
+    // Send initial values to parent
     onRotationUpdate({
       x: 150,
       y: 0,
       z: 180
     });
     
-    // Log to confirm initial values
-    console.log("Initial camera rotation set:", {
-      x: 150,
-      y: 0,
-      z: 180
-    });
-  }, [camera, scene]);
+    console.log("Initial rotation set to:", {x: 150, y: 0, z: 180});
+    
+    // Set initial rotation in orbit controls
+    if (controlsRef.current) {
+      controlsRef.current.object.rotation.x = THREE.MathUtils.degToRad(150);
+      controlsRef.current.object.rotation.y = THREE.MathUtils.degToRad(0);
+      controlsRef.current.object.rotation.z = THREE.MathUtils.degToRad(180);
+      controlsRef.current.update();
+    }
+  }, []);
 
   // Track camera rotation using useFrame for continuous updates
   useFrame(() => {
-    // Get the camera rotation in radians directly from the camera
-    const rotation = camera.rotation;
-    
-    // Convert radians to degrees and send to parent
-    const degrees = {
-      x: Math.round((rotation.x * 180) / Math.PI),
-      y: Math.round((rotation.y * 180) / Math.PI),
-      z: Math.round((rotation.z * 180) / Math.PI)
-    };
-    
-    onRotationUpdate(degrees);
+    if (controlsRef.current) {
+      // Get the camera rotation in radians
+      const rotation = controlsRef.current.object.rotation;
+      
+      // Convert radians to degrees and send to parent
+      const degrees = {
+        x: Math.round((rotation.x * 180) / Math.PI),
+        y: Math.round((rotation.y * 180) / Math.PI),
+        z: Math.round((rotation.z * 180) / Math.PI)
+      };
+      
+      onRotationUpdate(degrees);
+    }
   });
 
   return (
@@ -86,22 +86,22 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
       <directionalLight position={[0, 10, 5]} intensity={1} color="#ffffff" />
       <directionalLight position={[0, -10, -5]} intensity={0.5} color="#ffffff" />
 
-      {/* Configure the camera */}
+      {/* Configure the camera with initial rotation */}
       <PerspectiveCamera 
-        ref={cameraRef}
         makeDefault 
-        position={[0, 0, 10]} 
+        position={[0, 0, 10]}  
         rotation={[
-          (150 * Math.PI) / 180, // X rotation: 150 degrees in radians
-          (0 * Math.PI) / 180,   // Y rotation: 0 degrees in radians
-          (180 * Math.PI) / 180  // Z rotation: 180 degrees in radians
+          THREE.MathUtils.degToRad(150),
+          THREE.MathUtils.degToRad(0),
+          THREE.MathUtils.degToRad(180)
         ]}
+        up={[0, 1, 0]}
         fov={50} 
         near={0.1} 
         far={1000} 
       />
 
-      {/* Add orbit controls for interactive camera movement */}
+      {/* Add orbit controls with minimal configuration */}
       <OrbitControls
         ref={controlsRef}
         enableDamping
@@ -109,11 +109,18 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
         rotateSpeed={0.5}
         minDistance={5}
         maxDistance={20}
-        makeDefault
+        target={[0, 0, 0]}
+        enableRotate={true}
+        enableZoom={true}
+        enablePan={true}
       />
 
       {/* Create the three discs with their respective sizes and positions */}
-      <group>
+      <group rotation={[
+        THREE.MathUtils.degToRad(150), // X rotation: 150 degrees
+        THREE.MathUtils.degToRad(0),   // Y rotation: 0 degrees
+        THREE.MathUtils.degToRad(180)  // Z rotation: 180 degrees
+      ]}>
         <Disc 
           size={size1} 
           position={new THREE.Vector3(0, 0, -distance)} 
@@ -139,9 +146,6 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
           centerOffsetY={centerOffsetY}
         />
       </group>
-
-      {/* Add coordinate axes for reference (only in development) */}
-      {/* <axesHelper args={[5]} /> */}
     </>
   );
 };
@@ -158,15 +162,22 @@ const ThreeScene = () => {
     setRotationDegrees(degrees);
   };
 
-  // Add the rotation degrees to the parent component for use in app state or UI
-  useEffect(() => {
-    // This could be used to sync with global state, etc.
-    // console.log('Rotation updated:', rotationDegrees);
-  }, [rotationDegrees]);
-
   return (
     <div className="relative">
-      <Canvas>
+      <Canvas
+        camera={{
+          position: [0, 0, 10],
+          fov: 50,
+          rotation: [
+            THREE.MathUtils.degToRad(150),
+            THREE.MathUtils.degToRad(0),
+            THREE.MathUtils.degToRad(180)
+          ],
+          up: [0, 1, 0],
+          far: 1000,
+          near: 0.1
+        }}
+      >
         <SceneContent onRotationUpdate={handleRotationUpdate} />
       </Canvas>
       
