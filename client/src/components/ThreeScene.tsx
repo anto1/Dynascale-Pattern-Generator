@@ -50,7 +50,8 @@ const SceneContent = ({
     distance, 
     ellipsisProportion, 
     centerOffsetX, 
-    centerOffsetY 
+    centerOffsetY,
+    fov
   } = useDiscs();
   
   // Get access to the renderer, scene, and camera
@@ -141,7 +142,7 @@ const SceneContent = ({
           THREE.MathUtils.degToRad(180)
         ]}
         up={[0, 1, 0]}
-        fov={50} 
+        fov={fov} 
         near={0.1} 
         far={1000} 
       />
@@ -210,6 +211,7 @@ const ThreeScene = ({
 }) => {
   const [rotationDegrees, setRotationDegrees] = useState<RotationDegrees>({ x: 150, y: 0, z: 180 });
   const { isCapturing } = useScreenshot();
+  const { fov } = useDiscs();
 
   // Pass the rotation update function to the scene content
   const handleRotationUpdate = (degrees: RotationDegrees) => {
@@ -230,7 +232,7 @@ const ThreeScene = ({
         style={{ width: '100%', height: '100%' }}
         camera={{
           position: [0, 0, 10],
-          fov: 50,
+          fov: fov, // Use FOV from store
           rotation: [
             THREE.MathUtils.degToRad(150),
             THREE.MathUtils.degToRad(0),
