@@ -23,7 +23,7 @@ interface DiscsState {
 const DEFAULT_SIZE_1 = 1.0;
 const DEFAULT_SIZE_2 = 1.5;
 const DEFAULT_SIZE_3 = 2.0;
-const DEFAULT_DISTANCE = 2.0;
+const DEFAULT_DISTANCE = 0.5;
 
 export const useDiscs = create<DiscsState>((set) => ({
   // Initial state

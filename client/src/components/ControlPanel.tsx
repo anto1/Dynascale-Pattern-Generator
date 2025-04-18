@@ -104,8 +104,8 @@ const ControlPanel = () => {
             <label className="text-sm text-gray-400 mb-1 block">Distance Between Discs: {distance.toFixed(1)}</label>
             <Slider 
               value={[distance]} 
-              min={0.5} 
-              max={5} 
+              min={0.1} 
+              max={2} 
               step={0.1} 
               onValueChange={(value) => setDistance(value[0])} 
             />
@@ -120,7 +120,7 @@ const ControlPanel = () => {
                 className="flex items-center space-x-1"
               >
                 <TimerReset size={16} />
-                <span>TimerReset Values</span>
+                <span>Reset Values</span>
               </Button>
               
               <div className="flex items-center space-x-2">

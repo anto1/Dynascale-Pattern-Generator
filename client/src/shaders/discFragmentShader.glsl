@@ -14,8 +14,12 @@ void main() {
   // Add subtle animation to the gradient
   float animatedDist = dist + 0.05 * sin(uTime * 0.5 + dist * 10.0);
   
-  // Create smooth gradient from inner to outer color
-  vec3 color = mix(uInnerColor, uOuterColor, smoothstep(0.0, 1.0, animatedDist));
+  // Create smooth gradient from inner to outer color with more glow at edges
+  vec3 color = mix(uInnerColor, uOuterColor, pow(smoothstep(0.0, 1.0, animatedDist), 0.8));
+  
+  // Add edge glow effect
+  float glow = pow(dist, 3.0) * 1.5;
+  color += uOuterColor * glow;
   
   // Add a subtle pulsing effect to the alpha
   float alpha = 1.0 - 0.1 * sin(uTime + dist * 5.0);
