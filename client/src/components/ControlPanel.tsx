@@ -24,6 +24,7 @@ const ControlPanel = ({
     ellipsisProportion, setEllipsisProportion,
     centerOffsetX, setCenterOffsetX,
     centerOffsetY, setCenterOffsetY,
+    fov, setFOV,
     resetValues
   } = useDiscs();
   
@@ -114,6 +115,27 @@ const ControlPanel = ({
               />
             </div>
           </div>
+          
+          {/* Camera section */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium mb-2">Camera</h3>
+            <div>
+              <label className="text-xs text-gray-400 block">
+                Focal Length (FOV): {fov}°
+              </label>
+              <Slider 
+                value={[fov]} 
+                min={10} 
+                max={120} 
+                step={1} 
+                onValueChange={(value) => setFOV(value[0])} 
+                className="my-1"
+              />
+              <p className="text-xs text-gray-500">
+                Lower values = Telephoto, Higher values = Wide-angle
+              </p>
+            </div>
+          </div>
 
           {/* Reset and export/import buttons */}
           <div className="pt-4 border-t border-gray-700 space-y-3">
@@ -175,7 +197,7 @@ const ControlPanel = ({
                     
                     // Validate and apply the disc settings
                     if (configData?.discs) {
-                      const { distance, ellipsisProportion, centerOffsetX, centerOffsetY } = configData.discs;
+                      const { distance, ellipsisProportion, centerOffsetX, centerOffsetY, fov: configFov } = configData.discs;
                       
                       // Apply each setting if it exists and is valid
                       if (typeof distance === 'number' && !isNaN(distance)) {
@@ -192,6 +214,10 @@ const ControlPanel = ({
                       
                       if (typeof centerOffsetY === 'number' && !isNaN(centerOffsetY)) {
                         setCenterOffsetY(centerOffsetY);
+                      }
+                      
+                      if (typeof configFov === 'number' && !isNaN(configFov)) {
+                        setFOV(configFov);
                       }
                       
                       setImportStatus("Configuration imported successfully");
@@ -237,7 +263,8 @@ const ControlPanel = ({
                     distance,
                     ellipsisProportion,
                     centerOffsetX,
-                    centerOffsetY
+                    centerOffsetY,
+                    fov
                   },
                   // Can add more data categories here in the future
                 };
