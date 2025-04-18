@@ -28,6 +28,27 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
     centerOffsetY 
   } = useDiscs();
 
+  // Set initial camera rotation
+  useEffect(() => {
+    if (controlsRef.current) {
+      // Set the camera's initial rotation
+      const camera = controlsRef.current.object;
+      camera.rotation.x = (150 * Math.PI) / 180;
+      camera.rotation.y = (0 * Math.PI) / 180;
+      camera.rotation.z = (180 * Math.PI) / 180;
+      
+      // Update the orbit controls to match the new camera orientation
+      controlsRef.current.update();
+      
+      // Send initial rotation to parent
+      onRotationUpdate({
+        x: 150,
+        y: 0,
+        z: 180
+      });
+    }
+  }, []);
+
   // Track camera rotation
   useFrame(() => {
     if (controlsRef.current) {
@@ -53,7 +74,18 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
       <directionalLight position={[0, -10, -5]} intensity={0.5} color="#ffffff" />
 
       {/* Configure the camera */}
-      <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={50} near={0.1} far={1000} />
+      <PerspectiveCamera 
+        makeDefault 
+        position={[0, 0, 10]} 
+        rotation={[
+          (150 * Math.PI) / 180, // X rotation: 150 degrees in radians
+          (0 * Math.PI) / 180,   // Y rotation: 0 degrees in radians
+          (180 * Math.PI) / 180  // Z rotation: 180 degrees in radians
+        ]}
+        fov={50} 
+        near={0.1} 
+        far={1000} 
+      />
 
       {/* Add orbit controls for interactive camera movement */}
       <OrbitControls
@@ -104,7 +136,7 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
  * and orbit controls for camera manipulation
  */
 const ThreeScene = () => {
-  const [rotationDegrees, setRotationDegrees] = useState<RotationDegrees>({ x: 0, y: 0, z: 0 });
+  const [rotationDegrees, setRotationDegrees] = useState<RotationDegrees>({ x: 150, y: 0, z: 180 });
 
   // Pass the rotation update function to the scene content
   const handleRotationUpdate = (degrees: RotationDegrees) => {
