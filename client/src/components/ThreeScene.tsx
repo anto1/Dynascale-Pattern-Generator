@@ -11,7 +11,15 @@ import * as THREE from "three";
  */
 const ThreeScene = () => {
   const controlsRef = useRef<any>(null);
-  const { size1, size2, size3, distance, ellipsisProportion } = useDiscs();
+  const { 
+    size1, 
+    size2, 
+    size3, 
+    distance, 
+    ellipsisProportion, 
+    centerOffsetX, 
+    centerOffsetY 
+  } = useDiscs();
 
   return (
     <Canvas>
@@ -40,18 +48,24 @@ const ThreeScene = () => {
           position={new THREE.Vector3(0, 0, -distance)} 
           rotation={[0, 0, 0]} 
           ellipsisProportion={ellipsisProportion}
+          centerOffsetX={centerOffsetX}
+          centerOffsetY={centerOffsetY}
         />
         <Disc 
           size={size2} 
           position={new THREE.Vector3(0, 0, 0)} 
           rotation={[0, 0, 0]} 
           ellipsisProportion={ellipsisProportion}
+          centerOffsetX={centerOffsetX}
+          centerOffsetY={centerOffsetY}
         />
         <Disc 
           size={size3} 
           position={new THREE.Vector3(0, 0, distance)} 
           rotation={[0, 0, 0]} 
           ellipsisProportion={ellipsisProportion}
+          centerOffsetX={centerOffsetX}
+          centerOffsetY={centerOffsetY}
         />
       </group>
 

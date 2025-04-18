@@ -14,6 +14,8 @@ const ControlPanel = () => {
   const { 
     distance, setDistance,
     ellipsisProportion, setEllipsisProportion,
+    centerOffsetX, setCenterOffsetX,
+    centerOffsetY, setCenterOffsetY,
     resetValues
   } = useDiscs();
   
@@ -71,6 +73,38 @@ const ControlPanel = () => {
             />
             <p className="text-xs text-gray-500">
               1.0 = Circle, Lower values = Elliptical
+            </p>
+          </div>
+        </div>
+        
+        {/* Gradient center offset column */}
+        <div className="flex-1 min-w-[200px]">
+          <h3 className="text-sm font-medium mb-2">Gradient Center</h3>
+          <div className="space-y-2">
+            <div>
+              <label className="text-xs text-gray-400 block">Center X: {centerOffsetX.toFixed(2)}</label>
+              <Slider 
+                value={[centerOffsetX]} 
+                min={-1.0} 
+                max={1.0} 
+                step={0.05} 
+                onValueChange={(value) => setCenterOffsetX(value[0])} 
+                className="my-1"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block">Center Y: {centerOffsetY.toFixed(2)}</label>
+              <Slider 
+                value={[centerOffsetY]} 
+                min={-1.0} 
+                max={1.0} 
+                step={0.05} 
+                onValueChange={(value) => setCenterOffsetY(value[0])} 
+                className="my-1"
+              />
+            </div>
+            <p className="text-xs text-gray-500">
+              0,0 = Centered, ±1 = Edge offsets
             </p>
           </div>
         </div>
