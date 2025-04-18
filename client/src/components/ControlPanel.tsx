@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useDiscs } from "@/lib/stores/useDiscs";
-import { useAudio } from "@/lib/stores/useAudio";
-import { VolumeX, Volume2, RotateCw, TimerReset } from "lucide-react";
+import { TimerReset } from "lucide-react";
 
 /**
  * ControlPanel component for adjusting disc properties and view controls
@@ -18,29 +16,6 @@ const ControlPanel = () => {
     centerOffsetY, setCenterOffsetY,
     resetValues
   } = useDiscs();
-  
-  const { backgroundMusic, isMuted, toggleMute } = useAudio();
-
-  // Handle mute toggle
-  const handleMuteToggle = () => {
-    toggleMute();
-    
-    if (backgroundMusic) {
-      if (isMuted) {
-        backgroundMusic.play().catch(e => console.log("Error playing music:", e));
-      } else {
-        backgroundMusic.pause();
-      }
-    }
-  };
-
-  // Handle play music
-  const handlePlayMusic = () => {
-    if (backgroundMusic && isMuted) {
-      toggleMute();
-      backgroundMusic.play().catch(e => console.log("Error playing music:", e));
-    }
-  };
 
   return (
     <div className={`bg-gray-800 text-white p-3 transition-all duration-300 ${showControls ? 'h-auto' : 'h-12 overflow-hidden'}`}>
@@ -58,25 +33,6 @@ const ControlPanel = () => {
 
       {/* Control sliders in a compact layout */}
       <div className="flex flex-wrap items-start gap-4">
-        {/* Left column - Appearance */}
-        <div className="flex-1 min-w-[200px]">
-          <h3 className="text-sm font-medium mb-2">Appearance</h3>
-          <div>
-            <label className="text-xs text-gray-400 block">Ellipsis Proportion: {ellipsisProportion.toFixed(2)}</label>
-            <Slider 
-              value={[ellipsisProportion]} 
-              min={0.3} 
-              max={1.0} 
-              step={0.05} 
-              onValueChange={(value) => setEllipsisProportion(value[0])} 
-              className="my-1"
-            />
-            <p className="text-xs text-gray-500">
-              1.0 = Circle, Lower values = Elliptical
-            </p>
-          </div>
-        </div>
-        
         {/* Gradient center offset column */}
         <div className="flex-1 min-w-[200px]">
           <h3 className="text-sm font-medium mb-2">Gradient Center</h3>
@@ -109,7 +65,26 @@ const ControlPanel = () => {
           </div>
         </div>
         
-        {/* Middle column - Composition */}
+        {/* Appearance column */}
+        <div className="flex-1 min-w-[200px]">
+          <h3 className="text-sm font-medium mb-2">Appearance</h3>
+          <div>
+            <label className="text-xs text-gray-400 block">Ellipsis Proportion: {ellipsisProportion.toFixed(2)}</label>
+            <Slider 
+              value={[ellipsisProportion]} 
+              min={0.3} 
+              max={1.0} 
+              step={0.05} 
+              onValueChange={(value) => setEllipsisProportion(value[0])} 
+              className="my-1"
+            />
+            <p className="text-xs text-gray-500">
+              1.0 = Circle, Lower values = Elliptical
+            </p>
+          </div>
+        </div>
+        
+        {/* Composition column */}
         <div className="flex-1 min-w-[200px]">
           <h3 className="text-sm font-medium mb-2">Composition</h3>
           <div>
@@ -122,47 +97,21 @@ const ControlPanel = () => {
               onValueChange={(value) => setDistance(value[0])} 
               className="my-1"
             />
-          </div>
-        </div>
-        
-        {/* Right column - Controls */}
-        <div className="flex-1 min-w-[200px]">
-          <h3 className="text-sm font-medium mb-2">Controls</h3>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={resetValues}
-              className="flex items-center space-x-1 text-xs h-8"
-            >
-              <TimerReset size={14} />
-              <span>Reset</span>
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleMuteToggle}
-              title={isMuted ? "Unmute" : "Mute"}
-              className="h-8 w-8"
-            >
-              {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-            </Button>
-            
-            {isMuted && (
-              <Button
-                variant="outline"
+            <div className="mt-4">
+              <Button 
+                variant="outline" 
                 size="sm"
-                onClick={handlePlayMusic}
-                className="text-xs h-8"
+                onClick={resetValues}
+                className="flex items-center space-x-1 text-xs h-8"
               >
-                Play Music
+                <TimerReset size={14} />
+                <span>Reset All Values</span>
               </Button>
-            )}
+              <p className="text-xs text-gray-500 mt-2">
+                Use mouse: Drag to rotate, Scroll to zoom
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Use mouse: Drag = rotate, Scroll = zoom
-          </p>
         </div>
       </div>
     </div>
