@@ -199,13 +199,29 @@ const SceneContent = ({
  * ThreeScene component that renders the 3D scene with the discs
  * and orbit controls for camera manipulation
  */
-const ThreeScene = ({ maxZoom = 50 }: { maxZoom?: number }) => {
+const ThreeScene = ({ 
+  maxZoom = 50,
+  captureScreenshotTrigger = false,
+  onCaptureComplete
+}: { 
+  maxZoom?: number;
+  captureScreenshotTrigger?: boolean;
+  onCaptureComplete?: () => void;
+}) => {
   const [rotationDegrees, setRotationDegrees] = useState<RotationDegrees>({ x: 150, y: 0, z: 180 });
+  const { isCapturing } = useScreenshot();
 
   // Pass the rotation update function to the scene content
   const handleRotationUpdate = (degrees: RotationDegrees) => {
     setRotationDegrees(degrees);
   };
+
+  // Handle screenshot capture complete
+  const handleCaptureComplete = useCallback(() => {
+    if (onCaptureComplete) {
+      onCaptureComplete();
+    }
+  }, [onCaptureComplete]);
 
   return (
     <div className="relative w-full h-full">
@@ -227,7 +243,9 @@ const ThreeScene = ({ maxZoom = 50 }: { maxZoom?: number }) => {
       >
         <SceneContent 
           onRotationUpdate={handleRotationUpdate} 
-          maxZoom={maxZoom} 
+          maxZoom={maxZoom}
+          onCaptureScreenshot={captureScreenshotTrigger}
+          onCaptureComplete={handleCaptureComplete}
         />
       </Canvas>
       
@@ -235,6 +253,15 @@ const ThreeScene = ({ maxZoom = 50 }: { maxZoom?: number }) => {
       <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
         Rotation: X: {rotationDegrees.x}° Y: {rotationDegrees.y}° Z: {rotationDegrees.z}°
       </div>
+      
+      {/* Display screenshot status overlay */}
+      {isCapturing && (
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/30">
+          <div className="bg-black/80 text-white px-4 py-2 rounded-md">
+            Capturing scene...
+          </div>
+        </div>
+      )}
     </div>
   );
 };

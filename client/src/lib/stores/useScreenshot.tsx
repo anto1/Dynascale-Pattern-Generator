@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { WebGLRenderer, Scene, Camera } from 'three';
+import * as THREE from 'three';
+import { WebGLRenderer, Scene, Camera, Vector2 } from 'three';
 
 interface ScreenshotState {
   isCapturing: boolean;
@@ -26,7 +27,7 @@ export const useScreenshot = create<ScreenshotState>((set) => ({
     
     try {
       // Store original renderer properties
-      const originalSize = renderer.getSize(new THREE.Vector2());
+      const originalSize = renderer.getSize(new Vector2());
       const originalRatio = renderer.getPixelRatio();
       
       // Set high-quality rendering for the screenshot
@@ -67,6 +68,3 @@ export const useScreenshot = create<ScreenshotState>((set) => ({
   
   setError: (message: string | null) => set({ errorMessage: message })
 }));
-
-// Add missing THREE import at the top of the file
-import * as THREE from 'three';

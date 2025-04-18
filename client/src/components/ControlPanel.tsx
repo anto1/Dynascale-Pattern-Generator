@@ -10,10 +10,14 @@ import html2canvas from "html2canvas";
  */
 const ControlPanel = ({ 
   showControls, 
-  setShowControls 
+  setShowControls,
+  onCaptureScreenshot,
+  captureError
 }: { 
   showControls: boolean; 
   setShowControls: (show: boolean) => void;
+  onCaptureScreenshot?: () => void;
+  captureError?: string | null;
 }) => {
   const { 
     distance, setDistance,
@@ -127,46 +131,21 @@ const ControlPanel = ({
               variant="default" 
               size="sm"
               onClick={() => {
-                // Set status while processing
+                // Set status message while processing
                 setImportStatus("Capturing scene...");
                 
-                try {
-                  // Find the container that holds the canvas
-                  const canvasContainer = document.querySelector('.relative.w-full.h-full');
+                // Trigger the screenshot capture in Three.js
+                if (onCaptureScreenshot) {
+                  onCaptureScreenshot();
                   
-                  if (!canvasContainer) {
-                    throw new Error("Canvas container not found");
-                  }
-                  
-                  // Use html2canvas to capture the entire 3D scene
-                  html2canvas(canvasContainer as HTMLElement, {
-                    backgroundColor: '#000000', // Set a black background
-                    allowTaint: true,          // Allow cross-origin images
-                    useCORS: true,             // Try to load images with CORS
-                    scale: 2,                  // Higher quality
-                    logging: true              // Enable logging for debugging
-                  }).then(canvas => {
-                    // Get the image data
-                    const dataUrl = canvas.toDataURL('image/png');
-                    
-                    // Create a link and trigger download
-                    const exportName = `disc-image-${new Date().toISOString().slice(0,10)}.png`;
-                    const linkElement = document.createElement('a');
-                    linkElement.setAttribute('href', dataUrl);
-                    linkElement.setAttribute('download', exportName);
-                    linkElement.click();
-                    
-                    // Show success message
+                  // Update status message (screenshot download is automatic)
+                  // Wait a bit to show the "Success" message
+                  setTimeout(() => {
                     setImportStatus("Image exported successfully");
                     setTimeout(() => setImportStatus(null), 3000);
-                  }).catch(err => {
-                    console.error("html2canvas error:", err);
-                    setImportStatus("Error: Could not capture screen");
-                    setTimeout(() => setImportStatus(null), 3000);
-                  });
-                } catch (error) {
-                  console.error("Error exporting image:", error);
-                  setImportStatus("Error exporting image");
+                  }, 1000);
+                } else {
+                  setImportStatus("Error: Screenshot function not available");
                   setTimeout(() => setImportStatus(null), 3000);
                 }
               }}
