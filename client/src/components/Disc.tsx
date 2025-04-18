@@ -27,7 +27,6 @@ varying float vDistance;
 uniform float uTime;
 uniform float uSize;
 uniform vec3 uColor0;   // 0%
-uniform vec3 uColor50;  // 50%
 uniform vec3 uColor75;  // 75%
 uniform vec3 uColor90;  // 90%
 uniform vec3 uColor100; // 100%
@@ -42,15 +41,11 @@ void main() {
   // Create multi-stop color gradient
   vec3 color;
   
-  // Calculate color based on the 5 color stops
-  if (animatedDist < 0.5) {
-    // Between 0% and 50%
-    float t = animatedDist / 0.5; // normalize to 0-1 range
-    color = mix(uColor0, uColor50, smoothstep(0.0, 1.0, t));
-  } else if (animatedDist < 0.75) {
-    // Between 50% and 75%
-    float t = (animatedDist - 0.5) / 0.25; // normalize to 0-1 range
-    color = mix(uColor50, uColor75, smoothstep(0.0, 1.0, t));
+  // Calculate color based on the 4 color stops
+  if (animatedDist < 0.75) {
+    // Between 0% and 75%
+    float t = animatedDist / 0.75; // normalize to 0-1 range
+    color = mix(uColor0, uColor75, smoothstep(0.0, 1.0, t));
   } else if (animatedDist < 0.9) {
     // Between 75% and 90%
     float t = (animatedDist - 0.75) / 0.15; // normalize to 0-1 range
@@ -96,10 +91,9 @@ const Disc = ({ size, position, rotation }: DiscProps) => {
       uniforms: {
         uTime: { value: 0 },
         uSize: { value: size },
-        uColor0: { value: new THREE.Color("#0A0D2C") },   // 0% - Center
-        uColor50: { value: new THREE.Color("#090C26") },  // 50%
-        uColor75: { value: new THREE.Color("#0D1548") },  // 75%
-        uColor90: { value: new THREE.Color("#1B307A") },  // 90%
+        uColor0: { value: new THREE.Color("#000000") },   // 0% - Center
+        uColor75: { value: new THREE.Color("#030B3E") },  // 75%
+        uColor90: { value: new THREE.Color("#112670") },  // 90%
         uColor100: { value: new THREE.Color("#294BAB") }, // 100% - Edge
       },
     });
