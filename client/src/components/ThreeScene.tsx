@@ -47,6 +47,9 @@ const SceneContent = ({
     centerOffsetX, 
     centerOffsetY 
   } = useDiscs();
+  
+  // Get access to the renderer, scene, and camera
+  const { gl, scene, camera } = useThree();
 
   // Initialize with default rotation
   useEffect(() => {
