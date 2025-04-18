@@ -127,17 +127,56 @@ const ControlPanel = ({
               size="sm"
               onClick={() => {
                 try {
-                  // Find the canvas element - we need to get the actual WebGL canvas
-                  const canvas = document.querySelector('canvas');
+                  // Find the canvas element - target the specific canvas used by Three.js
+                  const canvases = document.getElementsByTagName('canvas');
                   
-                  if (!canvas) {
+                  if (!canvases || canvases.length === 0) {
                     setImportStatus("Error: Canvas not found");
                     setTimeout(() => setImportStatus(null), 3000);
                     return;
                   }
                   
-                  // Use the canvas to create a data URL of the current view
-                  const dataUrl = canvas.toDataURL('image/png');
+                  // Use the first canvas (there should only be one Three.js canvas)
+                  const canvas = canvases[0];
+                  
+                  // Get the WebGL context if needed for some browsers
+                  const ctx = canvas.getContext('webgl2') || canvas.getContext('webgl');
+                  // WebGL context properties are read-only, we'll work with what we have
+                  
+                  // Try to get the image directly from the canvas
+                  let dataUrl = '';
+                  
+                  try {
+                    // First try to get the data directly from the WebGL canvas
+                    dataUrl = canvas.toDataURL('image/png');
+                    
+                    // Check if the dataUrl is empty or just a transparent image
+                    if (dataUrl === 'data:,' || dataUrl.length < 1000) {
+                      // If it's an empty or very small image, try another method
+                      throw new Error("Empty canvas data");
+                    }
+                  } catch (err) {
+                    console.log("Direct canvas export failed, trying alternative method", err);
+                    
+                    // Alternative method: use html2canvas
+                    // Create a new canvas for copying
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = canvas.width;
+                    tempCanvas.height = canvas.height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    
+                    if (tempCtx) {
+                      // Force GPU rendering if possible
+                      tempCtx.imageSmoothingEnabled = true;
+                      
+                      // Draw the original canvas onto the temporary canvas
+                      tempCtx.drawImage(canvas, 0, 0);
+                      dataUrl = tempCanvas.toDataURL('image/png');
+                    } else {
+                      // Last resort: just try the direct method again
+                      dataUrl = canvas.toDataURL('image/png');
+                    }
+                  }
                   
                   // Create a link and trigger download
                   const exportName = `disc-image-${new Date().toISOString().slice(0,10)}.png`;
