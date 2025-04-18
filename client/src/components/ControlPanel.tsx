@@ -3,6 +3,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { useDiscs } from "@/lib/stores/useDiscs";
 import { TimerReset, ChevronLeft, ChevronRight, Download, Upload, Image } from "lucide-react";
+import html2canvas from "html2canvas";
 
 /**
  * ControlPanel component for adjusting disc properties and view controls
@@ -126,68 +127,43 @@ const ControlPanel = ({
               variant="default" 
               size="sm"
               onClick={() => {
+                // Set status while processing
+                setImportStatus("Capturing scene...");
+                
                 try {
-                  // Find the canvas element - target the specific canvas used by Three.js
-                  const canvases = document.getElementsByTagName('canvas');
+                  // Find the container that holds the canvas
+                  const canvasContainer = document.querySelector('.relative.w-full.h-full');
                   
-                  if (!canvases || canvases.length === 0) {
-                    setImportStatus("Error: Canvas not found");
+                  if (!canvasContainer) {
+                    throw new Error("Canvas container not found");
+                  }
+                  
+                  // Use html2canvas to capture the entire 3D scene
+                  html2canvas(canvasContainer as HTMLElement, {
+                    backgroundColor: '#000000', // Set a black background
+                    allowTaint: true,          // Allow cross-origin images
+                    useCORS: true,             // Try to load images with CORS
+                    scale: 2,                  // Higher quality
+                    logging: true              // Enable logging for debugging
+                  }).then(canvas => {
+                    // Get the image data
+                    const dataUrl = canvas.toDataURL('image/png');
+                    
+                    // Create a link and trigger download
+                    const exportName = `disc-image-${new Date().toISOString().slice(0,10)}.png`;
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUrl);
+                    linkElement.setAttribute('download', exportName);
+                    linkElement.click();
+                    
+                    // Show success message
+                    setImportStatus("Image exported successfully");
                     setTimeout(() => setImportStatus(null), 3000);
-                    return;
-                  }
-                  
-                  // Use the first canvas (there should only be one Three.js canvas)
-                  const canvas = canvases[0];
-                  
-                  // Get the WebGL context if needed for some browsers
-                  const ctx = canvas.getContext('webgl2') || canvas.getContext('webgl');
-                  // WebGL context properties are read-only, we'll work with what we have
-                  
-                  // Try to get the image directly from the canvas
-                  let dataUrl = '';
-                  
-                  try {
-                    // First try to get the data directly from the WebGL canvas
-                    dataUrl = canvas.toDataURL('image/png');
-                    
-                    // Check if the dataUrl is empty or just a transparent image
-                    if (dataUrl === 'data:,' || dataUrl.length < 1000) {
-                      // If it's an empty or very small image, try another method
-                      throw new Error("Empty canvas data");
-                    }
-                  } catch (err) {
-                    console.log("Direct canvas export failed, trying alternative method", err);
-                    
-                    // Alternative method: use html2canvas
-                    // Create a new canvas for copying
-                    const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = canvas.width;
-                    tempCanvas.height = canvas.height;
-                    const tempCtx = tempCanvas.getContext('2d');
-                    
-                    if (tempCtx) {
-                      // Force GPU rendering if possible
-                      tempCtx.imageSmoothingEnabled = true;
-                      
-                      // Draw the original canvas onto the temporary canvas
-                      tempCtx.drawImage(canvas, 0, 0);
-                      dataUrl = tempCanvas.toDataURL('image/png');
-                    } else {
-                      // Last resort: just try the direct method again
-                      dataUrl = canvas.toDataURL('image/png');
-                    }
-                  }
-                  
-                  // Create a link and trigger download
-                  const exportName = `disc-image-${new Date().toISOString().slice(0,10)}.png`;
-                  const linkElement = document.createElement('a');
-                  linkElement.setAttribute('href', dataUrl);
-                  linkElement.setAttribute('download', exportName);
-                  linkElement.click();
-                  
-                  // Show success message
-                  setImportStatus("Image exported successfully");
-                  setTimeout(() => setImportStatus(null), 3000);
+                  }).catch(err => {
+                    console.error("html2canvas error:", err);
+                    setImportStatus("Error: Could not capture screen");
+                    setTimeout(() => setImportStatus(null), 3000);
+                  });
                 } catch (error) {
                   console.error("Error exporting image:", error);
                   setImportStatus("Error exporting image");

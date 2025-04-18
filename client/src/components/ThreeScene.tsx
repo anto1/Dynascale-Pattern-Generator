@@ -1,8 +1,9 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import Disc from "./Disc";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useDiscs } from "@/lib/stores/useDiscs";
+import { useScreenshot } from "@/lib/stores/useScreenshot";
 import * as THREE from "three";
 
 // Define a type for rotation degrees
@@ -32,10 +33,14 @@ const createDefaultRotation = () => {
  */
 const SceneContent = ({ 
   onRotationUpdate, 
-  maxZoom = 50 
+  maxZoom = 50,
+  onCaptureScreenshot = false,
+  onCaptureComplete = () => {}
 }: { 
   onRotationUpdate: (degrees: RotationDegrees) => void;
   maxZoom?: number;
+  onCaptureScreenshot?: boolean;
+  onCaptureComplete?: () => void;
 }) => {
   const controlsRef = useRef<any>(null);
   const { 
@@ -50,6 +55,9 @@ const SceneContent = ({
   
   // Get access to the renderer, scene, and camera
   const { gl, scene, camera } = useThree();
+  
+  // Get screenshot function
+  const captureScreenshot = useScreenshot(state => state.captureScreenshot);
 
   // Initialize with default rotation
   useEffect(() => {
@@ -87,6 +95,34 @@ const SceneContent = ({
       onRotationUpdate(degrees);
     }
   });
+  
+  // Handle screenshot capturing when triggered from parent
+  useEffect(() => {
+    if (onCaptureScreenshot) {
+      // Set black background for the screenshot
+      const originalBackground = gl.domElement.style.background;
+      gl.setClearColor(new THREE.Color('#000000'), 1);
+      
+      // Capture screenshot
+      captureScreenshot(gl, scene, camera)
+        .then(() => {
+          console.log('Screenshot captured successfully');
+          // Reset background
+          gl.setClearColor(new THREE.Color('#000000'), 0);
+          gl.domElement.style.background = originalBackground;
+          // Notify parent that capture is complete
+          onCaptureComplete();
+        })
+        .catch(error => {
+          console.error('Error capturing screenshot:', error);
+          // Reset background even on error
+          gl.setClearColor(new THREE.Color('#000000'), 0);
+          gl.domElement.style.background = originalBackground;
+          // Notify parent that capture is complete
+          onCaptureComplete();
+        });
+    }
+  }, [onCaptureScreenshot, gl, scene, camera, captureScreenshot, onCaptureComplete]);
 
   return (
     <>
