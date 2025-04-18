@@ -1,4 +1,4 @@
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import Disc from "./Disc";
 import { useRef, useState, useEffect } from "react";
@@ -18,6 +18,8 @@ interface RotationDegrees {
  */
 const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: RotationDegrees) => void }) => {
   const controlsRef = useRef<any>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const { 
     size1, 
     size2, 
@@ -28,42 +30,53 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
     centerOffsetY 
   } = useDiscs();
 
-  // Set initial camera rotation
+  // Access the Three.js state using useThree
+  const { camera, scene } = useThree();
+  
+  // Set initial rotation (runs once after component mounts)
   useEffect(() => {
+    // Initial rotation values in radians
+    const initialRotationX = (150 * Math.PI) / 180;
+    const initialRotationY = (0 * Math.PI) / 180;
+    const initialRotationZ = (180 * Math.PI) / 180;
+    
+    // Apply rotation directly to camera
+    camera.rotation.set(initialRotationX, initialRotationY, initialRotationZ);
+    camera.updateMatrixWorld();
+    
     if (controlsRef.current) {
-      // Set the camera's initial rotation
-      const camera = controlsRef.current.object;
-      camera.rotation.x = (150 * Math.PI) / 180;
-      camera.rotation.y = (0 * Math.PI) / 180;
-      camera.rotation.z = (180 * Math.PI) / 180;
-      
-      // Update the orbit controls to match the new camera orientation
+      // Update orbit controls to match camera rotation
       controlsRef.current.update();
-      
-      // Send initial rotation to parent
-      onRotationUpdate({
-        x: 150,
-        y: 0,
-        z: 180
-      });
     }
-  }, []);
+    
+    // Send initial values to parent component
+    onRotationUpdate({
+      x: 150,
+      y: 0,
+      z: 180
+    });
+    
+    // Log to confirm initial values
+    console.log("Initial camera rotation set:", {
+      x: 150,
+      y: 0,
+      z: 180
+    });
+  }, [camera, scene]);
 
-  // Track camera rotation
+  // Track camera rotation using useFrame for continuous updates
   useFrame(() => {
-    if (controlsRef.current) {
-      // Get the camera rotation in radians
-      const rotation = controlsRef.current.object.rotation;
-      
-      // Convert radians to degrees and send to parent
-      const degrees = {
-        x: Math.round((rotation.x * 180) / Math.PI),
-        y: Math.round((rotation.y * 180) / Math.PI),
-        z: Math.round((rotation.z * 180) / Math.PI)
-      };
-      
-      onRotationUpdate(degrees);
-    }
+    // Get the camera rotation in radians directly from the camera
+    const rotation = camera.rotation;
+    
+    // Convert radians to degrees and send to parent
+    const degrees = {
+      x: Math.round((rotation.x * 180) / Math.PI),
+      y: Math.round((rotation.y * 180) / Math.PI),
+      z: Math.round((rotation.z * 180) / Math.PI)
+    };
+    
+    onRotationUpdate(degrees);
   });
 
   return (
@@ -75,6 +88,7 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
 
       {/* Configure the camera */}
       <PerspectiveCamera 
+        ref={cameraRef}
         makeDefault 
         position={[0, 0, 10]} 
         rotation={[
@@ -95,6 +109,7 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
         rotateSpeed={0.5}
         minDistance={5}
         maxDistance={20}
+        makeDefault
       />
 
       {/* Create the three discs with their respective sizes and positions */}
