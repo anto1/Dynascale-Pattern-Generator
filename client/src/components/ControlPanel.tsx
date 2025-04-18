@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { useDiscs } from "@/lib/stores/useDiscs";
-import { TimerReset, ChevronLeft, ChevronRight, Download, Upload } from "lucide-react";
+import { TimerReset, ChevronLeft, ChevronRight, Download, Upload, Image } from "lucide-react";
 
 /**
  * ControlPanel component for adjusting disc properties and view controls
@@ -126,36 +126,39 @@ const ControlPanel = ({
               variant="default" 
               size="sm"
               onClick={() => {
-                // Create a data object with all the current settings
-                const exportData = {
-                  discs: {
-                    distance,
-                    ellipsisProportion,
-                    centerOffsetX,
-                    centerOffsetY
-                  },
-                  // Can add more data categories here in the future
-                };
-                
-                // Convert to JSON and create a downloadable file
-                const dataStr = JSON.stringify(exportData, null, 2);
-                const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-                
-                // Create a link and trigger download
-                const exportName = `disc-configuration-${new Date().toISOString().slice(0,10)}.json`;
-                const linkElement = document.createElement('a');
-                linkElement.setAttribute('href', dataUri);
-                linkElement.setAttribute('download', exportName);
-                linkElement.click();
-                
-                // Show success message
-                setImportStatus("Configuration exported successfully");
-                setTimeout(() => setImportStatus(null), 3000);
+                try {
+                  // Find the canvas element - we need to get the actual WebGL canvas
+                  const canvas = document.querySelector('canvas');
+                  
+                  if (!canvas) {
+                    setImportStatus("Error: Canvas not found");
+                    setTimeout(() => setImportStatus(null), 3000);
+                    return;
+                  }
+                  
+                  // Use the canvas to create a data URL of the current view
+                  const dataUrl = canvas.toDataURL('image/png');
+                  
+                  // Create a link and trigger download
+                  const exportName = `disc-image-${new Date().toISOString().slice(0,10)}.png`;
+                  const linkElement = document.createElement('a');
+                  linkElement.setAttribute('href', dataUrl);
+                  linkElement.setAttribute('download', exportName);
+                  linkElement.click();
+                  
+                  // Show success message
+                  setImportStatus("Image exported successfully");
+                  setTimeout(() => setImportStatus(null), 3000);
+                } catch (error) {
+                  console.error("Error exporting image:", error);
+                  setImportStatus("Error exporting image");
+                  setTimeout(() => setImportStatus(null), 3000);
+                }
               }}
               className="flex items-center space-x-1 text-xs h-8 w-full justify-center"
             >
-              <Download size={14} />
-              <span>Export Configuration</span>
+              <Image size={14} />
+              <span>Export Image</span>
             </Button>
             
             {/* Hidden file input for import */}
@@ -228,6 +231,42 @@ const ControlPanel = ({
             >
               <Upload size={14} />
               <span>Import Configuration</span>
+            </Button>
+              
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                // Create a data object with all the current settings
+                const exportData = {
+                  discs: {
+                    distance,
+                    ellipsisProportion,
+                    centerOffsetX,
+                    centerOffsetY
+                  },
+                  // Can add more data categories here in the future
+                };
+                
+                // Convert to JSON and create a downloadable file
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                
+                // Create a link and trigger download
+                const exportName = `disc-configuration-${new Date().toISOString().slice(0,10)}.json`;
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportName);
+                linkElement.click();
+                
+                // Show success message
+                setImportStatus("Configuration exported successfully");
+                setTimeout(() => setImportStatus(null), 3000);
+              }}
+              className="flex items-center space-x-1 text-xs h-8 w-full justify-center"
+            >
+              <Download size={14} />
+              <span>Save Settings</span>
             </Button>
             
             {/* Status message */}
