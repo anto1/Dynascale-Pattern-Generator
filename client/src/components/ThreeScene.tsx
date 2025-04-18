@@ -30,7 +30,13 @@ const createDefaultRotation = () => {
  * Scene content component that contains all 3D objects
  * This component is used inside the Canvas and can use hooks like useFrame
  */
-const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: RotationDegrees) => void }) => {
+const SceneContent = ({ 
+  onRotationUpdate, 
+  maxZoom = 50 
+}: { 
+  onRotationUpdate: (degrees: RotationDegrees) => void;
+  maxZoom?: number;
+}) => {
   const controlsRef = useRef<any>(null);
   const { 
     size1, 
@@ -107,8 +113,8 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
         enableDamping
         dampingFactor={0.05}
         rotateSpeed={0.5}
-        minDistance={5}
-        maxDistance={20}
+        minDistance={2}
+        maxDistance={maxZoom}
         target={[0, 0, 0]}
         enableRotate={true}
         enableZoom={true}
@@ -154,7 +160,7 @@ const SceneContent = ({ onRotationUpdate }: { onRotationUpdate: (degrees: Rotati
  * ThreeScene component that renders the 3D scene with the discs
  * and orbit controls for camera manipulation
  */
-const ThreeScene = () => {
+const ThreeScene = ({ maxZoom = 50 }: { maxZoom?: number }) => {
   const [rotationDegrees, setRotationDegrees] = useState<RotationDegrees>({ x: 150, y: 0, z: 180 });
 
   // Pass the rotation update function to the scene content
@@ -178,7 +184,10 @@ const ThreeScene = () => {
           near: 0.1
         }}
       >
-        <SceneContent onRotationUpdate={handleRotationUpdate} />
+        <SceneContent 
+          onRotationUpdate={handleRotationUpdate} 
+          maxZoom={maxZoom} 
+        />
       </Canvas>
       
       {/* Display rotation degrees overlay */}
