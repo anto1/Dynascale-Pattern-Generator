@@ -26,6 +26,7 @@ varying float vDistance;
 
 uniform float uTime;
 uniform float uSize;
+uniform float uEllipsisProportion; // Aspect ratio for ellipsis
 uniform vec3 uColor0;   // 0%
 uniform vec3 uColor75;  // 75%
 uniform vec3 uColor90;  // 90%
@@ -72,12 +73,13 @@ interface DiscProps {
   size: number;
   position: THREE.Vector3;
   rotation: [number, number, number];
+  ellipsisProportion?: number; // Optional aspect ratio for creating ellipses
 }
 
 /**
  * Disc component that renders a single disc with a blue gradient shader
  */
-const Disc = ({ size, position, rotation }: DiscProps) => {
+const Disc = ({ size, position, rotation, ellipsisProportion = 1.0 }: DiscProps) => {
   // Reference to the mesh for animations
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -91,13 +93,14 @@ const Disc = ({ size, position, rotation }: DiscProps) => {
       uniforms: {
         uTime: { value: 0 },
         uSize: { value: size },
+        uEllipsisProportion: { value: ellipsisProportion },
         uColor0: { value: new THREE.Color("#000000") },   // 0% - Center
         uColor75: { value: new THREE.Color("#030B3E") },  // 75%
         uColor90: { value: new THREE.Color("#112670") },  // 90%
         uColor100: { value: new THREE.Color("#294BAB") }, // 100% - Edge
       },
     });
-  }, [size]);
+  }, [size, ellipsisProportion]);
 
   // Update shader uniforms on each frame
   useFrame((state) => {
@@ -107,16 +110,22 @@ const Disc = ({ size, position, rotation }: DiscProps) => {
       
       // Update size uniform if it changes
       material.uniforms.uSize.value = size;
+      
+      // Update ellipsis proportion if it changes
+      material.uniforms.uEllipsisProportion.value = ellipsisProportion;
     }
   });
 
+  // Create a more detailed circle for smoother edges
+  // Use 128 segments instead of 64 for smoother appearance
   return (
     <mesh 
       ref={meshRef} 
       position={position} 
       rotation={rotation}
+      scale={[1, ellipsisProportion, 1]} // Apply scaling for ellipsis effect
     >
-      <circleGeometry args={[size, 64]} />
+      <circleGeometry args={[size, 128]} />
       <primitive object={material} attach="material" />
     </mesh>
   );

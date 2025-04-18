@@ -12,10 +12,8 @@ import { VolumeX, Volume2, RotateCw, TimerReset } from "lucide-react";
 const ControlPanel = () => {
   const [showControls, setShowControls] = useState(true);
   const { 
-    size1, setSize1, 
-    size2, setSize2, 
-    size3, setSize3,
     distance, setDistance,
+    ellipsisProportion, setEllipsisProportion,
     resetValues
   } = useDiscs();
   
@@ -59,40 +57,21 @@ const ControlPanel = () => {
       {/* Control sliders */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Disc Size</h3>
+          <h3 className="text-lg font-medium">Appearance</h3>
           
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-gray-400 mb-1 block">Disc 1 Size: {size1.toFixed(1)}</label>
+              <label className="text-sm text-gray-400 mb-1 block">Ellipsis Proportion: {ellipsisProportion.toFixed(2)}</label>
               <Slider 
-                value={[size1]} 
-                min={0.5} 
-                max={3} 
-                step={0.1} 
-                onValueChange={(value) => setSize1(value[0])} 
+                value={[ellipsisProportion]} 
+                min={0.3} 
+                max={1.0} 
+                step={0.05} 
+                onValueChange={(value) => setEllipsisProportion(value[0])} 
               />
-            </div>
-            
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Disc 2 Size: {size2.toFixed(1)}</label>
-              <Slider 
-                value={[size2]} 
-                min={0.5} 
-                max={3} 
-                step={0.1} 
-                onValueChange={(value) => setSize2(value[0])} 
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Disc 3 Size: {size3.toFixed(1)}</label>
-              <Slider 
-                value={[size3]} 
-                min={0.5} 
-                max={3} 
-                step={0.1} 
-                onValueChange={(value) => setSize3(value[0])} 
-              />
+              <p className="text-xs text-gray-500 mt-1">
+                1.0 = Circle, Lower values = More elliptical
+              </p>
             </div>
           </div>
         </div>

@@ -9,10 +9,11 @@ interface DiscsState {
   // Distance between discs
   distance: number;
   
+  // Ellipsis proportion (aspect ratio) - affects all discs
+  ellipsisProportion: number;
+  
   // Setter functions
-  setSize1: (size: number) => void;
-  setSize2: (size: number) => void;
-  setSize3: (size: number) => void;
+  setEllipsisProportion: (proportion: number) => void;
   setDistance: (distance: number) => void;
   
   // Reset function
@@ -24,6 +25,7 @@ const DEFAULT_SIZE_1 = 1.0;
 const DEFAULT_SIZE_2 = 1.5;
 const DEFAULT_SIZE_3 = 2.0;
 const DEFAULT_DISTANCE = 0.5;
+const DEFAULT_ELLIPSIS_PROPORTION = 1.0; // 1.0 means circle, < 1.0 means ellipsis
 
 export const useDiscs = create<DiscsState>((set) => ({
   // Initial state
@@ -31,12 +33,11 @@ export const useDiscs = create<DiscsState>((set) => ({
   size2: DEFAULT_SIZE_2,
   size3: DEFAULT_SIZE_3,
   distance: DEFAULT_DISTANCE,
+  ellipsisProportion: DEFAULT_ELLIPSIS_PROPORTION,
   
   // Setter functions
-  setSize1: (size: number) => set({ size1: size }),
-  setSize2: (size: number) => set({ size2: size }),
-  setSize3: (size: number) => set({ size3: size }),
-  setDistance: (distance: number) => set({ distance: distance }),
+  setDistance: (distance: number) => set({ distance }),
+  setEllipsisProportion: (proportion: number) => set({ ellipsisProportion: proportion }),
   
   // Reset function - restores defaults
   resetValues: () => set({
@@ -44,5 +45,6 @@ export const useDiscs = create<DiscsState>((set) => ({
     size2: DEFAULT_SIZE_2,
     size3: DEFAULT_SIZE_3,
     distance: DEFAULT_DISTANCE,
+    ellipsisProportion: DEFAULT_ELLIPSIS_PROPORTION,
   }),
 }));
