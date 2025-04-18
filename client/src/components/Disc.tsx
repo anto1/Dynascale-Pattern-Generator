@@ -27,6 +27,7 @@ varying float vDistance;
 uniform float uTime;
 uniform float uSize;
 uniform vec3 uInnerColor;
+uniform vec3 uMiddleColor;
 uniform vec3 uOuterColor;
 
 void main() {
@@ -36,8 +37,20 @@ void main() {
   // Add subtle animation to the gradient
   float animatedDist = dist + 0.05 * sin(uTime * 0.5 + dist * 10.0);
   
-  // Create smooth gradient from inner to outer color with more glow at edges
-  vec3 color = mix(uInnerColor, uOuterColor, pow(smoothstep(0.0, 1.0, animatedDist), 0.8));
+  // Create three-color gradient
+  vec3 color;
+  
+  // First transition: inner to middle (0.0 to 0.5)
+  // Second transition: middle to outer (0.5 to 1.0)
+  if (animatedDist < 0.5) {
+    // Map 0.0-0.5 to 0.0-1.0 for the inner-to-middle gradient
+    float normalizedDist = animatedDist * 2.0;
+    color = mix(uInnerColor, uMiddleColor, smoothstep(0.0, 1.0, normalizedDist));
+  } else {
+    // Map 0.5-1.0 to 0.0-1.0 for the middle-to-outer gradient
+    float normalizedDist = (animatedDist - 0.5) * 2.0;
+    color = mix(uMiddleColor, uOuterColor, smoothstep(0.0, 1.0, normalizedDist));
+  }
   
   // Add edge glow effect
   float glow = pow(dist, 3.0) * 1.5;
@@ -74,8 +87,9 @@ const Disc = ({ size, position, rotation }: DiscProps) => {
       uniforms: {
         uTime: { value: 0 },
         uSize: { value: size },
-        uInnerColor: { value: new THREE.Color("#000020") },  // Darker blue center
-        uOuterColor: { value: new THREE.Color("#135EF1") },  // Requested blue color
+        uInnerColor: { value: new THREE.Color("#0A0D2C") },  // Center color
+        uMiddleColor: { value: new THREE.Color("#0D1963") }, // Middle color
+        uOuterColor: { value: new THREE.Color("#294BAB") },  // Edge color
       },
     });
   }, [size]);
